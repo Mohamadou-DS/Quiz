@@ -1,30 +1,44 @@
 import streamlit as st
+import random
 
-# Taux de conversion fixes (exemple - vous pouvez les mettre à jour dynamiquement)
-conversion_rates = {
-    "EUR": {"USD": 1.1, "MRU": 40.5, "XOF": 655.957},
-    "USD": {"EUR": 0.91, "MRU": 37, "XOF": 594},
-    "MRU": {"EUR": 0.025, "USD": 0.027, "XOF": 16.05},
-    "XOF": {"EUR": 0.0015, "USD": 0.0017, "MRU": 0.0623},
-}
+# Quiz interactif
+st.title("🧠 Quiz interactif sur les maths")
 
-# Interface principale
-st.title("💱 Convertisseur de Devises")
+# Générer une question aléatoire
+def generate_question():
+    operators = ["+", "-", "*", "/"]
+    num1 = random.randint(1, 10)
+    num2 = random.randint(1, 10)
+    operator = random.choice(operators)
 
-# Entrées de l'utilisateur
-amount = st.number_input("Montant à convertir", min_value=0.0, value=1.0, step=0.1)
-from_currency = st.selectbox("Devises d'origine", list(conversion_rates.keys()))
-to_currency = st.selectbox("Devises cible", list(conversion_rates.keys()))
-
-# Conversion
-if st.button("Convertir"):
-    if from_currency == to_currency:
-        st.write(f"Le montant reste le même : **{amount:.2f} {from_currency}**")
+    if operator == "/":
+        question = f"Quelle est la division entière de {num1 * num2} ÷ {num2} ?"
+        answer = num1
+    elif operator == "*":
+        question = f"Combien fait {num1} × {num2} ?"
+        answer = num1 * num2
+    elif operator == "+":
+        question = f"Combien fait {num1} + {num2} ?"
+        answer = num1 + num2
     else:
-        rate = conversion_rates[from_currency][to_currency]
-        converted_amount = amount * rate
-        st.write(f"**{amount:.2f} {from_currency}** équivaut à **{converted_amount:.2f} {to_currency}**")
+        question = f"Combien fait {num1} - {num2} ?"
+        answer = num1 - num2
 
-# Affichage des taux
-st.subheader("Taux de conversion actuels")
-st.write(conversion_rates)
+    return question, answer
+
+# Session pour stocker la question et la réponse
+if "question" not in st.session_state:
+    st.session_state.question, st.session_state.answer = generate_question()
+
+# Affichage de la question
+st.write(f"**Question** : {st.session_state.question}")
+user_answer = st.text_input("Entrez votre réponse :")
+
+# Vérification de la réponse
+if st.button("Vérifier la réponse"):
+    if user_answer.strip().isdigit() and int(user_answer) == st.session_state.answer:
+        st.success("Bonne réponse ! 🎉")
+    else:
+        st.error(f"Mauvaise réponse. La bonne réponse était : {st.session_state.answer}")
+    # Générer une nouvelle question
+    st.session_state.question, st.session_state.answer = generate_question()
